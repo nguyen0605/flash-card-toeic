@@ -60,47 +60,6 @@ The application comes pre-bundled with **3,529 curated TOEIC words**, organized 
 
 ---
 
-## 🛠️ Architecture & Tech Stack
-
-```
-flash-card/
-├── public/                 # Static assets, PWA icons, manifest.json
-├── scripts/
-│   └── extract_vocab.py    # Python ETL pipeline (DOCX -> Clean structured JSON)
-├── src/
-│   ├── components/         # Modular React Components
-│   │   ├── AuthModal.tsx       # Supabase Cloud Authentication Modal
-│   │   ├── DeckListView.tsx    # Decks catalog, filters & importer trigger
-│   │   ├── DictionaryView.tsx  # Instant search & POS classification filter
-│   │   ├── FlashcardView.tsx   # 3D interactive flashcard with swipe gestures
-│   │   ├── Header.tsx          # Safe-area header with streak & sync status
-│   │   ├── ImportModal.tsx     # Multi-format universal importer
-│   │   ├── Navbar.tsx          # iOS-style bottom tab bar
-│   │   ├── QuizView.tsx        # 3-mode multiple choice & audio quiz
-│   │   └── StatsView.tsx       # TTS settings, analytics & manual backup
-│   ├── data/
-│   │   ├── decks.json          # 118 structured thematic decks
-│   │   └── vocabulary.json     # 3,529 TOEIC vocabulary entries
-│   ├── services/
-│   │   ├── db.ts               # LocalStorage abstraction & caching layer
-│   │   ├── importer.ts         # Multi-format parsing & text processing engine
-│   │   ├── srs.ts              # SuperMemo SM-2 spaced repetition algorithm
-│   │   ├── supabase.ts         # Supabase client SDK
-│   │   ├── syncService.ts      # Bi-directional cloud synchronization
-│   │   └── tts.ts              # Web Speech Synthesis API wrapper
-│   ├── types/
-│   │   └── index.ts            # TypeScript interfaces & types
-│   ├── App.tsx             # Application root
-│   └── main.tsx            # Application entry point
-├── package.json
-├── tailwind.config.js
-├── tsconfig.json
-├── vercel.json
-└── vite.config.ts
-```
-
----
-
 ## 🚀 Getting Started
 
 ### Prerequisites
