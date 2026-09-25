@@ -2,7 +2,7 @@
 
 # 🚀 TOEIC 3000 Smart Flashcards & Spaced Repetition (PWA)
 
-### Ứng dụng học từ vựng tiếng Anh thông minh, đồng bộ đa thiết bị, tối ưu hóa cho di động (Mobile-First / iOS PWA)
+### Intelligent English Vocabulary Learning PWA with Cross-Device Cloud Sync, Optimized for Mobile (iOS Native-Feel)
 
 [![Vercel Deployment](https://img.shields.io/badge/Vercel-Deployed-black?style=for-the-badge&logo=vercel)](https://vite-react-six-eta-55.vercel.app)
 [![React](https://img.shields.io/badge/React-18.x-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
@@ -10,99 +10,162 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-Database_%26_Auth-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 
-[**Trải Nghiệm Trực Tiếp (Live Demo)**](https://vite-react-six-eta-55.vercel.app) • [**Tính Năng Chính**](#-tính-năng-nổi-bật) • [**Kiến Trúc Kỹ Thuật**](#-kiến-trúc--công-nghệ) • [**Cài Đặt & Phát Triển**](#-cài-đặt--chạy-dự-án)
+[**🌐 Live Demo**](https://vite-react-six-eta-55.vercel.app) • [**✨ Features**](#-key-features) • [**🛠️ Architecture**](#-architecture--tech-stack) • [**🚀 Getting Started**](#-getting-started) • [**🇻🇳 Tiếng Việt**](#-phiên-bản-tiếng-việt)
 
 </div>
 
 ---
 
-## 📖 Giới Thiệu Tổng Quan
+## 📖 English Overview
 
-**TOEIC 3000 Flashcards** là ứng dụng web cấp tiến (Progressive Web App - PWA) được thiết kế chuyên biệt nhằm phục vụ việc ôn luyện và ghi nhớ từ vựng tiếng Anh theo phương pháp khoa học.
+**TOEIC 3000 Flashcards** is a modern Progressive Web App (PWA) built specifically for memorizing English vocabulary efficiently using evidence-based cognitive science.
 
-Dự án tích hợp sẵn kho dữ liệu **3.529 từ vựng TOEIC chuẩn**, chia thành **118 chủ đề/bộ từ**, cùng các chuyên đề đặc biệt như **Phrasal Verbs** và **Collocations**. Ứng dụng áp dụng thuật toán lặp lại ngắt quãng **SuperMemo SM-2 (Spaced Repetition System)**, cho phép tối đa hóa khả năng ghi nhớ dài hạn với thời gian học ngắn nhất mỗi ngày.
-
----
-
-## ✨ Tính Năng Nổi Bật
-
-### 🎴 1. Trải Nghiệm Flashcard 3D & Cử Chỉ Vuốt Native
-- **Lật thẻ 3D trực quan:** Hiển thị từ vựng, phiên âm quốc tế IPA, loại từ và nghĩa tiếng Việt kèm câu ví dụ thực tế.
-- **Cử chỉ cảm ứng mượt mà (Touch Gestures):** Hỗ trợ vuốt sang phải khi thuộc từ (*Good/Easy*) hoặc vuốt sang trái khi quên (*Again*).
-- **Điều hướng linh hoạt:** Hỗ trợ nút quay lại từ trước (*Previous Word*) để người học xem lại bất cứ lúc nào.
-- **Tích hợp Web Speech Audio:** Tự động phát âm chuẩn xác với tùy chọn giọng Anh - Mỹ (`en-US`) hoặc Anh - Anh (`en-GB`), điều chỉnh tốc độ đọc linh hoạt (`0.8x` - `1.0x`).
-
-### 🧠 2. Thuật Toán Lặp Lại Ngắt Quãng (SuperMemo SM-2)
-- Tự động tính toán chu kỳ ôn tập dựa trên mức độ đánh giá: **Quên (Again)**, **Khó (Hard)**, **Tốt (Good)**, **Dễ (Easy)**.
-- Phân loại tiến độ học tập thành 3 trạng thái rõ ràng: *Chưa học (New)*, *Đang học (Learning)*, *Đã thành thạo (Mastered)*.
-- Lọc danh sách từ đến hạn ôn tập trong ngày (*Due Words*) để nhắc nhở người học duy trì chuỗi học tập (Streak).
-
-### ☁️ 3. Đồng Bộ Đa Thiết Bị Thời Gian Thực (Supabase Cloud Sync)
-- **Kiến trúc Offline-First:** Học và thêm từ mượt mà ngay cả khi không có mạng; dữ liệu tự động đồng bộ lên máy chủ khi có kết nối trở lại.
-- **Bảo mật cấp độ cao (Row Level Security - RLS):** Đảm bảo an toàn tuyệt đối cho dữ liệu cá nhân của từng người dùng.
-- Đồng bộ liền mạch tiến độ học giữa Điện thoại (iPhone/Android) và Máy tính (PC/Laptop).
-
-### 📥 4. Bộ Đọc Dữ Liệu Thông Minh (Universal Vocabulary Importer)
-- Cho phép người dùng kéo thả file `.docx`, `.csv`, `.tsv`, `.txt`, `.json` hoặc dán trực tiếp danh sách từ vựng thô vào app.
-- **Thuật toán bóc tách thông minh:** Tự động phát hiện và bỏ qua cột số thứ tự (STT), loại bỏ dòng tiêu đề và phân mục rác.
-- **Tự động chia nhỏ (Auto-Chunking):** Danh sách từ vựng số lượng lớn (>50 từ) tự động được chia nhỏ thành các bộ thẻ vừa vặn để việc học không bị quá tải.
-
-### 📱 5. Tối Ưu Hóa Riêng Cho iPhone 13 & Thiết Bị Di Động
-- Hỗ trợ đầy đủ tiêu chuẩn **Safe Area Insets** (`env(safe-area-inset-top)`, `env(safe-area-inset-bottom)`), không bao giờ bị tai thỏ (Notch) hay thanh vuốt Home che khuất.
-- Cài đặt dạng PWA (Thêm vào Màn hình chính / Add to Home Screen) chạy độc lập toàn màn hình như native app, không hiển thị thanh địa chỉ trình duyệt.
-
-### 📝 6. Hệ Thống Kiểm Tra Trắc Nghiệm Đa Dạng (Quiz Mode)
-- **3 Chế độ kiểm tra:** 
-  - Tiếng Anh $\rightarrow$ Tiếng Việt.
-  - Tiếng Việt $\rightarrow$ Tiếng Anh.
-  - Nghe phát âm $\rightarrow$ Đoán từ vựng.
-- Tự động tổng kết kết quả học tập và hiển thị mức độ tiến bộ sau mỗi bài quiz.
+The application comes pre-bundled with **3,529 curated TOEIC words**, organized into **118 thematic decks**, alongside dedicated decks for **Phrasal Verbs** and **Collocations**. It integrates the proven **SuperMemo SM-2 Spaced Repetition System (SRS)** to calculate optimal review intervals, maximizing long-term retention while minimizing required daily study time.
 
 ---
 
-## 🚀 Cài Đặt & Chạy Dự Án
+## ✨ Key Features
 
-### Yêu cầu tiên quyết
-- **Node.js**: Phiên bản 18 trở lên.
-- **npm** hoặc **yarn** / **pnpm**.
+### 🎴 1. 3D Flashcards & Native Touch Gestures
+- **Smooth 3D Flip Card:** Displays word, IPA phonetic transcription, part of speech, Vietnamese translation, and real-world example sentences.
+- **Intuitive Swipe Gestures:** Swipe right for known words (*Good / Easy*) and swipe left for forgotten words (*Again*).
+- **Flexible Navigation:** One-tap "Previous Word" button to review earlier cards anytime.
+- **Natural Web Speech TTS:** Automatic pronunciation with customizable accents (US `en-US` or UK `en-GB`) and adjustable playback speeds (`0.8x` - `1.0x`).
 
-### 1. Clone dự án và cài đặt dependencies
+### 🧠 2. SuperMemo SM-2 Spaced Repetition Algorithm
+- Automatically calculates review intervals based on user feedback: **Again**, **Hard**, **Good**, **Easy**.
+- Categorizes mastery into three stages: *New*, *Learning*, and *Mastered*.
+- Filters words due for review today to help maintain daily learning streaks.
+
+### ☁️ 3. Cross-Device Cloud Sync (Supabase Offline-First)
+- **Offline-First Architecture:** Study and import custom vocabularies completely offline; data auto-syncs with the cloud whenever an internet connection is available.
+- **Enterprise Security (Row Level Security - RLS):** Each user's study progress and custom decks are isolated and protected.
+- Seamless sync between iPhones, Android devices, and desktop browsers.
+
+### 📥 4. Universal Smart Vocabulary Importer
+- Import vocabulary from `.docx`, `.csv`, `.tsv`, `.txt`, `.json`, or directly paste raw text.
+- **Smart Parser:** Automatically detects and skips numerical index columns (STT), filters table header lines, and ignores section dividers.
+- **Auto-Chunking:** Automatically splits large word lists (>50 words) into manageable sub-decks to avoid cognitive overload.
+
+### 📱 5. Tailored for iPhone 13 & Mobile Devices (PWA)
+- Full support for iOS **Safe Area Insets** (`env(safe-area-inset-top)`, `env(safe-area-inset-bottom)`), preventing any notch or home-bar overlap.
+- Add to Home Screen support for an edge-to-edge, distraction-free native app experience without browser URL bars.
+
+### 📝 6. Comprehensive Quiz Engine
+- **3 Practice Modes:** 
+  - English $\rightarrow$ Vietnamese
+  - Vietnamese $\rightarrow$ English
+  - Listening $\rightarrow$ Word selection
+- Instant score summaries and progress tracking after every session.
+
+---
+
+## 🛠️ Architecture & Tech Stack
+
+```
+flash-card/
+├── public/                 # Static assets, PWA icons, manifest.json
+├── scripts/
+│   └── extract_vocab.py    # Python ETL pipeline (DOCX -> Clean structured JSON)
+├── src/
+│   ├── components/         # Modular React Components
+│   │   ├── AuthModal.tsx       # Supabase Cloud Authentication Modal
+│   │   ├── DeckListView.tsx    # Decks catalog, filters & importer trigger
+│   │   ├── DictionaryView.tsx  # Instant search & POS classification filter
+│   │   ├── FlashcardView.tsx   # 3D interactive flashcard with swipe gestures
+│   │   ├── Header.tsx          # Safe-area header with streak & sync status
+│   │   ├── ImportModal.tsx     # Multi-format universal importer
+│   │   ├── Navbar.tsx          # iOS-style bottom tab bar
+│   │   ├── QuizView.tsx        # 3-mode multiple choice & audio quiz
+│   │   └── StatsView.tsx       # TTS settings, analytics & manual backup
+│   ├── data/
+│   │   ├── decks.json          # 118 structured thematic decks
+│   │   └── vocabulary.json     # 3,529 TOEIC vocabulary entries
+│   ├── services/
+│   │   ├── db.ts               # LocalStorage abstraction & caching layer
+│   │   ├── importer.ts         # Multi-format parsing & text processing engine
+│   │   ├── srs.ts              # SuperMemo SM-2 spaced repetition algorithm
+│   │   ├── supabase.ts         # Supabase client SDK
+│   │   ├── syncService.ts      # Bi-directional cloud synchronization
+│   │   └── tts.ts              # Web Speech Synthesis API wrapper
+│   ├── types/
+│   │   └── index.ts            # TypeScript interfaces & types
+│   ├── App.tsx             # Application root
+│   └── main.tsx            # Application entry point
+├── package.json
+├── tailwind.config.js
+├── tsconfig.json
+├── vercel.json
+└── vite.config.ts
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- **Node.js**: v18 or later
+- **npm**, **yarn**, or **pnpm**
+
+### Installation
 ```bash
+# 1. Clone repository
 git clone https://github.com/<your-username>/flash-card.git
 cd flash-card
+
+# 2. Install dependencies
 npm install
+
+# 3. Setup environment variables
+cp .env.example .env
+# Edit .env and supply your Supabase credentials
 ```
 
-### 2. Cấu hình biến môi trường
-Tạo file `.env` tại thư mục gốc của dự án:
-```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
-```
-
-### 3. Khởi chạy môi trường phát triển (Development)
+### Development
 ```bash
 npm run dev
 ```
-Mở trình duyệt truy cập: `http://localhost:5173`
+Open `http://localhost:5173` in your browser.
 
-### 4. Build bản sản phẩm (Production)
+### Production Build
 ```bash
 npm run build
 ```
 
 ---
 
-## 🌐 Hướng Dẫn Cài Đặt Lên iPhone (PWA)
-
-1. Mở trình duyệt **Safari** trên iPhone và truy cập: [https://vite-react-six-eta-55.vercel.app](https://vite-react-six-eta-55.vercel.app)
-2. Bấm vào nút **Chia sẻ (Share)** (biểu tượng hình vuông có mũi tên chỉ lên ở thanh công cụ phía dưới).
-3. Cuộn danh sách xuống và chọn **"Thêm vào Màn hình chính" (Add to Home Screen)**.
-4. Đặt tên hiển thị (ví dụ: `TOEIC 3000`) và bấm **Thêm (Add)**.
-5. Biểu tượng ứng dụng sẽ xuất hiện trên màn hình iPhone, sẵn sàng sử dụng toàn màn hình không viền URL!
+<br/>
 
 ---
 
-## 📄 Bản Quyền & Giấy Phép
+## 🇻🇳 Phiên Bản Tiếng Việt
 
-Dự án được xây dựng và phát triển dưới giấy phép **MIT License**.
+<details open>
+<summary><b>Bấm để xem nội dung Tiếng Việt chi tiết</b></summary>
+
+### 📖 Giới Thiệu
+**TOEIC 3000 Flashcards** là ứng dụng web cấp tiến (PWA) được thiết kế tối ưu cho điện thoại di động (đặc biệt là iPhone 13) và máy tính, phục vụ việc ôn luyện và ghi nhớ từ vựng tiếng Anh theo phương pháp khoa học.
+
+Ứng dụng tích hợp sẵn kho dữ liệu **3.529 từ vựng TOEIC chuẩn**, chia thành **118 chủ đề**, cùng các chuyên đề đặc biệt như **Phrasal Verbs** và **Collocations**. Ứng dụng áp dụng thuật toán **SuperMemo SM-2 (Spaced Repetition System)** giúp tối ưu hóa khả năng ghi nhớ dài hạn với thời gian học ngắn nhất mỗi ngày.
+
+### ✨ Các Tính Năng Chính
+1. **Flashcard 3D & Cử chỉ vuốt:** Lật thẻ trực quan, vuốt sang phải khi thuộc, vuốt sang trái khi quên, có nút quay lại từ trước và phát âm chuẩn giọng Anh/Mỹ.
+2. **Thuật toán Spaced Repetition (SM-2):** Tự động lên lịch ôn tập thông minh (Again, Hard, Good, Easy), phân loại tiến độ thành *Chưa học*, *Đang học* và *Thành thạo*.
+3. **Đồng bộ Đám mây (Supabase):** Kiến trúc Offline-First, học offline mượt mà và tự động đồng bộ 2 chiều giữa iPhone và Máy tính qua Supabase PostgreSQL.
+4. **Bộ nhập dữ liệu thông minh:** Kéo thả file `.docx`, `.csv`, `.txt`, `.json` hoặc dán văn bản; tự động bỏ qua cột STT, loại bỏ dòng rác và tự chia nhỏ bộ từ lớn (>50 từ) thành các phần vừa học.
+5. **Tối ưu chuẩn iPhone 13:** Xử lý triệt để Safe Area Insets (không bị tai thỏ hay thanh Home che nút), hỗ trợ Add to Home Screen chạy toàn màn hình.
+6. **Luyện tập Quiz đa dạng:** Trắc nghiệm 3 chế độ (Anh $\rightarrow$ Việt, Việt $\rightarrow$ Anh, Nghe chọn từ).
+
+### 📱 Hướng Dẫn Cài Đặt Lên iPhone
+1. Mở trình duyệt **Safari** trên iPhone và truy cập: [https://vite-react-six-eta-55.vercel.app](https://vite-react-six-eta-55.vercel.app)
+2. Bấm nút **Chia sẻ (Share)** ở thanh công cụ dưới đáy Safari.
+3. Chọn **"Thêm vào Màn hình chính" (Add to Home Screen)**.
+4. App sẽ xuất hiện ngoài màn hình iPhone với icon riêng, mở lên học mượt mà toàn màn hình!
+
+</details>
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License**.
