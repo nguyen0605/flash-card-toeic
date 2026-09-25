@@ -1,0 +1,43 @@
+﻿# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing & Coverage
+coverage/
+
+# Production Build Output
+dist/
+dist-ssr/
+*.local
+
+# Environment Variables & Secrets
+.env
+.env.*
+!.env.example
+
+# Vercel & Deployments
+.vercel/
+
+# TypeScript Build Info
+*.tsbuildinfo
+
+# Logs & Debugging
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# OS & Editor generated files
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

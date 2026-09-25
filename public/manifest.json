@@ -1,0 +1,17 @@
+{
+  "name": "TOEIC 3000 Flashcards",
+  "short_name": "TOEIC 3000",
+  "description": "Học 3000 từ vựng TOEIC với Flashcards lặp lại ngắt quãng (SRS)",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
