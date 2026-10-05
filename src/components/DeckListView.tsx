@@ -16,6 +16,7 @@ interface DeckListViewProps {
   onStudyDue: () => void;
   onStudyLearned: () => void;
   onStudyUnmastered: () => void;
+  onStudyMastered?: () => void;
   onOpenImport: () => void;
   onDeleteCustomDeck?: (deckId: string) => void;
   starredCount: number;
@@ -33,6 +34,7 @@ export const DeckListView: React.FC<DeckListViewProps> = ({
   onStudyDue,
   onStudyLearned,
   onStudyUnmastered,
+  onStudyMastered,
   onOpenImport,
   onDeleteCustomDeck,
   starredCount,
@@ -139,16 +141,39 @@ export const DeckListView: React.FC<DeckListViewProps> = ({
           </div>
         )}
 
-        {/* Thống kê 3 chỉ số nhanh */}
+        {/* Thống kê 3 chỉ số nhanh: Đã thành thạo • Chưa thuộc • Tổng kho từ */}
         <div className="grid grid-cols-3 gap-2 pt-4 mt-3 border-t border-white/15 text-center">
-          <div>
-            <div className="text-[11px] text-blue-200">Đã thành thạo</div>
-            <div className="text-base font-black text-emerald-300">{overallStats.mastered}</div>
-          </div>
+          <button
+            type="button"
+            onClick={onStudyMastered}
+            disabled={overallStats.mastered === 0}
+            className={`group py-1 px-1.5 rounded-2xl transition-all text-center border ${
+              overallStats.mastered > 0
+                ? 'hover:bg-white/15 active:scale-95 border-transparent hover:border-emerald-300/40 cursor-pointer'
+                : 'border-transparent opacity-60 cursor-not-allowed'
+            }`}
+            title="Lối tắt: Bấm để làm bài Quiz trắc nghiệm các từ đã thành thạo"
+          >
+            <div className="text-[11px] text-emerald-200 font-bold flex items-center justify-center gap-1">
+              <span>Đã thành thạo</span>
+              <span className="text-[9px] bg-emerald-400/25 text-emerald-200 px-1.5 py-0.5 rounded-md group-hover:bg-emerald-400 group-hover:text-slate-900 transition-colors font-extrabold">
+                Quiz ngay
+              </span>
+            </div>
+            <div className="text-base font-black text-emerald-300 mt-0.5">
+              {overallStats.mastered}
+            </div>
+          </button>
+
           <button
             type="button"
             onClick={onStudyUnmastered}
-            className="group py-1 px-1.5 rounded-2xl hover:bg-white/15 active:scale-95 transition-all text-center border border-transparent hover:border-amber-300/40 cursor-pointer"
+            disabled={overallStats.learning === 0}
+            className={`group py-1 px-1.5 rounded-2xl transition-all text-center border ${
+              overallStats.learning > 0
+                ? 'hover:bg-white/15 active:scale-95 border-transparent hover:border-amber-300/40 cursor-pointer'
+                : 'border-transparent opacity-60 cursor-not-allowed'
+            }`}
             title="Lối tắt: Bấm để làm bài Quiz trắc nghiệm ngay các từ chưa thuộc"
           >
             <div className="text-[11px] text-amber-200 font-bold flex items-center justify-center gap-1">
@@ -161,49 +186,51 @@ export const DeckListView: React.FC<DeckListViewProps> = ({
               {overallStats.learning}
             </div>
           </button>
-          <div>
+
+          <div className="py-1 px-1.5">
             <div className="text-[11px] text-blue-200">Tổng kho từ</div>
-            <div className="text-base font-black text-white">{overallStats.total}</div>
+            <div className="text-base font-black text-white mt-0.5">{overallStats.total}</div>
           </div>
         </div>
       </div>
 
-      {/* Quick Action: Flashcard Từ đã học • Từ đánh dấu • Nạp file */}
+      {/* Quick Action: Quiz từ đã học • Quiz từ đánh dấu • Nạp file */}
       <div className="grid grid-cols-3 gap-2">
-        {/* Nút Xem Flashcard các từ đã học */}
+        {/* Nút Làm Quiz các từ đã học */}
         <button
           onClick={onStudyLearned}
           disabled={learnedCount === 0}
           className={`flex flex-col items-center justify-center p-2.5 rounded-2xl border text-center transition-all ${
             learnedCount > 0
-              ? 'bg-blue-50/80 border-blue-200 hover:bg-blue-100/80 active:scale-95 shadow-xs'
+              ? 'bg-blue-50/80 border-blue-200 hover:bg-blue-100/80 active:scale-95 shadow-xs cursor-pointer'
               : 'bg-slate-50 border-slate-200 opacity-60 cursor-not-allowed'
           }`}
-          title="Lật flashcard xem lại toàn bộ từ vựng bạn đã từng học"
+          title="Làm bài Quiz kiểm tra toàn bộ các từ vựng bạn đã từng học"
         >
           <div className="w-8 h-8 rounded-xl bg-brand-600 text-white flex items-center justify-center mb-1.5 shadow-sm shadow-brand-500/20">
-            <BookOpen className="w-4 h-4" />
+            <Zap className="w-4 h-4" />
           </div>
-          <div className="text-[11px] font-bold text-slate-800 leading-tight">Flashcard đã học</div>
+          <div className="text-[11px] font-bold text-slate-800 leading-tight">Quiz từ đã học</div>
           <div className="text-[10px] text-brand-600 font-semibold mt-0.5">
             {learnedCount > 0 ? `${learnedCount} từ` : 'Chưa có'}
           </div>
         </button>
 
-        {/* Nút Từ đánh dấu sao */}
+        {/* Nút Làm Quiz từ đánh dấu sao */}
         <button
           onClick={onStudyStarred}
           disabled={starredCount === 0}
           className={`flex flex-col items-center justify-center p-2.5 rounded-2xl border text-center transition-all ${
             starredCount > 0
-              ? 'bg-amber-50/80 border-amber-200 hover:bg-amber-100/80 active:scale-95 shadow-xs'
+              ? 'bg-amber-50/80 border-amber-200 hover:bg-amber-100/80 active:scale-95 shadow-xs cursor-pointer'
               : 'bg-slate-50 border-slate-200 opacity-60 cursor-not-allowed'
           }`}
+          title="Làm bài Quiz kiểm tra các từ bạn đã gắn dấu sao ⭐"
         >
           <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center mb-1.5 shadow-sm shadow-amber-500/20">
             <Star className="w-4 h-4 fill-amber-200 text-amber-200" />
           </div>
-          <div className="text-[11px] font-bold text-slate-800 leading-tight">Từ đánh dấu</div>
+          <div className="text-[11px] font-bold text-slate-800 leading-tight">Quiz từ đánh dấu</div>
           <div className="text-[10px] text-amber-700 font-semibold mt-0.5">
             {starredCount > 0 ? `${starredCount} từ` : 'Chưa có'}
           </div>

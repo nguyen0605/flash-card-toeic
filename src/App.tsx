@@ -179,6 +179,14 @@ export const App: React.FC = () => {
     });
   }, [progress, allWords]);
 
+  // Danh sách từ đã thành thạo (status === 'mastered')
+  const masteredWords = useMemo(() => {
+    return allWords.filter((w) => {
+      const p = progress[w.id];
+      return p && p.status === 'mastered';
+    });
+  }, [progress, allWords]);
+
   // Bắt đầu học một Deck: Nếu bài có > 15 từ thì mở modal chọn số từ muốn học
   const handleSelectDeck = (deck: Deck) => {
     if (deck.wordCount > 15) {
@@ -203,21 +211,27 @@ export const App: React.FC = () => {
     setActiveQuizDeck(deck);
   };
 
-  // Học danh sách từ đã đánh dấu (Flashcard)
+  // Làm Quiz danh sách từ đã đánh dấu
   const handleStudyStarred = () => {
-    if (starredWords.length === 0) return;
-    setCustomStudy({
+    if (starredWords.length === 0) {
+      alert('Bạn chưa đánh dấu sao từ vựng nào.');
+      return;
+    }
+    setCustomQuiz({
       words: starredWords,
-      title: `⭐ Từ Đã Đánh Dấu (${starredWords.length} từ)`
+      title: `⭐ Quiz: Từ Đánh Dấu (${starredWords.length} từ)`
     });
   };
 
-  // Xem Flashcard toàn bộ các từ đã học
+  // Làm Quiz toàn bộ các từ đã học
   const handleStudyLearned = () => {
-    if (learnedWords.length === 0) return;
-    setCustomStudy({
+    if (learnedWords.length === 0) {
+      alert('Bạn chưa học từ vựng nào. Hãy bắt đầu một bài học trước nhé!');
+      return;
+    }
+    setCustomQuiz({
       words: learnedWords,
-      title: `📚 Toàn Bộ Từ Đã Học (${learnedWords.length} từ)`
+      title: `📚 Quiz: Toàn Bộ Từ Đã Học (${learnedWords.length} từ)`
     });
   };
 
@@ -230,6 +244,18 @@ export const App: React.FC = () => {
     setCustomQuiz({
       words: unmasteredWords,
       title: `⚡ Quiz: Từ Chưa Thuộc (${unmasteredWords.length} từ)`
+    });
+  };
+
+  // Làm bài Quiz trắc nghiệm các từ Đã thành thạo (Ôn lại kiểm tra trí nhớ)
+  const handleStudyMastered = () => {
+    if (masteredWords.length === 0) {
+      alert('Bạn chưa có từ nào trong danh sách Đã thành thạo.');
+      return;
+    }
+    setCustomQuiz({
+      words: masteredWords,
+      title: `🏆 Quiz: Từ Đã Thành Thạo (${masteredWords.length} từ)`
     });
   };
 
@@ -348,6 +374,7 @@ export const App: React.FC = () => {
             onStudyDue={handleStudyDue}
             onStudyLearned={handleStudyLearned}
             onStudyUnmastered={handleStudyUnmastered}
+            onStudyMastered={handleStudyMastered}
             onOpenImport={() => setIsImportOpen(true)}
             onDeleteCustomDeck={handleDeleteCustomDeck}
             starredCount={starredWords.length}
