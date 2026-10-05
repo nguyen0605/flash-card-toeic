@@ -5100,16 +5100,16 @@
     "stt": "642",
     "word": "conduct",
     "pos": "v., n.",
-    "phonetic": "/'kɔndʌkt/",
-    "meaning": "or/kən'dʌkt/ điều khiển, chỉ đạo, chỉ huy; sự điều khiển, chỉ"
+    "phonetic": "/kən'dʌkt/",
+    "meaning": "điều khiển, chỉ đạo, chỉ huy; sự điều khiển, hạnh kiểm"
   },
   {
     "id": 639,
     "stt": "643",
-    "word": "huy",
-    "pos": "",
-    "phonetic": "",
-    "meaning": ""
+    "word": "conductor",
+    "pos": "n.",
+    "phonetic": "/kənˈdʌktər/",
+    "meaning": "nhạc trưởng, người soát vé, chất dẫn"
   },
   {
     "id": 640,
@@ -11060,8 +11060,8 @@
     "stt": "1400",
     "word": "goal",
     "pos": "n.",
-    "phonetic": "/goƱl/",
-    "meaning": ""
+    "phonetic": "/ɡəʊl/",
+    "meaning": "mục tiêu, khung thành, bàn thắng"
   },
   {
     "id": 1384,
@@ -11330,10 +11330,10 @@
   {
     "id": 1417,
     "stt": "1434",
-    "word": "grey (BrE) (NAmE usually gray)",
+    "word": "grey",
     "pos": "adj., n.",
-    "phonetic": "",
-    "meaning": ""
+    "phonetic": "/ɡreɪ/",
+    "meaning": "màu xám, hoa râm"
   },
   {
     "id": 1418,
@@ -15036,8 +15036,8 @@
     "stt": "1904",
     "word": "manufacture",
     "pos": "v., n.",
-    "phonetic": "/,mænju'fæktʃə/",
-    "meaning": ""
+    "phonetic": "/ˌmænjuˈfæktʃər/",
+    "meaning": "sản xuất, chế tạo"
   },
   {
     "id": 1881,
@@ -15994,26 +15994,26 @@
   {
     "id": 2000,
     "stt": "2024",
-    "word": "Mr (BrE) (also Mr. NAmE, BrE) abbr",
-    "pos": "",
-    "phonetic": "",
-    "meaning": ""
+    "word": "Mr.",
+    "pos": "abbr.",
+    "phonetic": "/ˈmɪstər/",
+    "meaning": "ông, ngài (danh xưng nam giới)"
   },
   {
     "id": 2001,
     "stt": "2025",
-    "word": "Mrs (BrE) (also Mrs. NAmE, BrE) abbr",
-    "pos": "",
-    "phonetic": "",
-    "meaning": ""
+    "word": "Mrs.",
+    "pos": "abbr.",
+    "phonetic": "/ˈmɪsɪz/",
+    "meaning": "bà (danh xưng phụ nữ đã kết hôn)"
   },
   {
     "id": 2002,
     "stt": "2026",
-    "word": "Ms (BrE) (also Ms. NAmE, BrE) abbr",
-    "pos": "",
-    "phonetic": "",
-    "meaning": ""
+    "word": "Ms.",
+    "pos": "abbr.",
+    "phonetic": "/mɪz/",
+    "meaning": "cô, bà (danh xưng phụ nữ)"
   },
   {
     "id": 2003,
@@ -19948,8 +19948,8 @@
     "stt": "2524",
     "word": "re-",
     "pos": "prefix",
-    "phonetic": "",
-    "meaning": ""
+    "phonetic": "/riː/",
+    "meaning": "lại, tái (tiền tố lặp lại)"
   },
   {
     "id": 2495,
@@ -21866,10 +21866,10 @@
   {
     "id": 2734,
     "stt": "2775",
-    "word": "self- combining form",
-    "pos": "",
-    "phonetic": "",
-    "meaning": ""
+    "word": "self-",
+    "pos": "prefix",
+    "phonetic": "/self/",
+    "meaning": "tự, bản thân"
   },
   {
     "id": 2735,
@@ -23170,10 +23170,10 @@
   {
     "id": 2897,
     "stt": "2943",
-    "word": "as soon as ngay khi",
-    "pos": "",
-    "phonetic": "",
-    "meaning": ""
+    "word": "as soon as",
+    "pos": "conj.",
+    "phonetic": "/æz suːn æz/",
+    "meaning": "ngay khi, càng sớm càng tốt"
   },
   {
     "id": 2898,
@@ -26642,10 +26642,10 @@
   {
     "id": 3331,
     "stt": "3384",
-    "word": "upwards (also upward especially in NAmE)",
+    "word": "upwards",
     "pos": "adv.",
-    "phonetic": "",
-    "meaning": ""
+    "phonetic": "/ˈʌpwədz/",
+    "meaning": "hướng lên trên, đi lên"
   },
   {
     "id": 3332,
@@ -27332,8 +27332,8 @@
     "stt": "3471",
     "word": "the Web",
     "pos": "n.",
-    "phonetic": "",
-    "meaning": ""
+    "phonetic": "/ðə web/",
+    "meaning": "mạng World Wide Web, web"
   },
   {
     "id": 3418,
@@ -27426,10 +27426,10 @@
   {
     "id": 3429,
     "stt": "3483",
-    "word": "well known know",
-    "pos": "",
-    "phonetic": "",
-    "meaning": ""
+    "word": "well-known",
+    "pos": "adj.",
+    "phonetic": "/ˌwel ˈnəʊn/",
+    "meaning": "nổi tiếng, được biết đến nhiều"
   },
   {
     "id": 3430,
@@ -28004,8 +28004,8 @@
     "stt": "3556",
     "word": "would",
     "pos": "modal v.",
-    "phonetic": "/wud/",
-    "meaning": ""
+    "phonetic": "/wʊd/",
+    "meaning": "sẽ (quá khứ của will), muốn, sẵn lòng"
   },
   {
     "id": 3502,

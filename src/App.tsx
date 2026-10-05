@@ -1,10 +1,11 @@
-﻿import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import vocabularyData from './data/vocabulary.json';
 import decksData from './data/decks.json';
 import { Word, Deck, WordProgress, UserStats } from './types';
 import { db } from './services/db';
 import { supabase } from './services/supabase';
 import { syncService } from './services/syncService';
+import { generateGoalTracks } from './data/tracks';
 import { Header } from './components/Header';
 import { Navbar, TabType } from './components/Navbar';
 import { DeckListView } from './components/DeckListView';
@@ -14,12 +15,16 @@ import { DictionaryView } from './components/DictionaryView';
 import { StatsView } from './components/StatsView';
 import { ImportModal } from './components/ImportModal';
 import { AuthModal } from './components/AuthModal';
+import { SelectWordCountModal } from './components/SelectWordCountModal';
 
 export const App: React.FC = () => {
   const [customWords, setCustomWords] = useState<Word[]>(db.getCustomWords());
   const [customDecks, setCustomDecks] = useState<Deck[]>(db.getCustomDecks());
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+
+  // Modal chọn số lượng từ khi bài học > 15 từ
+  const [pendingDeck, setPendingDeck] = useState<Deck | null>(null);
 
   // Trạng thái Supabase Auth & Sync
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -61,7 +66,12 @@ export const App: React.FC = () => {
 
   const allWords = useMemo(() => [...(vocabularyData as Word[]), ...customWords], [customWords]);
 
-  // Bộ bài chuyên đề: Phrasal Verbs & Cụm từ thông dụng
+  // 1. Lộ trình mục tiêu điểm số (Target Tracks) - Tách biệt độc lập 100%
+  const goalTracks = useMemo<Deck[]>(() => {
+    return generateGoalTracks(allWords);
+  }, [allWords]);
+
+  // 2. Bộ bài chuyên đề: Phrasal Verbs & Cụm từ thông dụng
   const specialDecks = useMemo<Deck[]>(() => {
     const phrWords = allWords.filter(w => w.pos.toLowerCase().includes('phr v.') || w.pos.toLowerCase().includes('phr'));
     const collocationWords = allWords.filter(w => w.word.trim().includes(' ') && !w.pos.toLowerCase().includes('phr v.'));
@@ -93,11 +103,14 @@ export const App: React.FC = () => {
     return list;
   }, [allWords]);
 
+  // Gộp toàn bộ bài học theo thứ tự ưu tiên:
+  // Lộ trình mục tiêu -> Chuyên đề -> Bộ bài tự tạo -> 118 Unit gốc
   const allDecks = useMemo(() => [
+    ...goalTracks,
     ...specialDecks,
     ...customDecks,
     ...(decksData as Deck[])
-  ], [specialDecks, customDecks]);
+  ], [goalTracks, specialDecks, customDecks]);
 
   const [currentTab, setCurrentTab] = useState<TabType>('decks');
   const [stats, setStats] = useState<UserStats>(db.getStats());
@@ -106,6 +119,7 @@ export const App: React.FC = () => {
   // Trạng thái phiên học hiện tại
   const [activeDeck, setActiveDeck] = useState<Deck | null>(null);
   const [activeQuizDeck, setActiveQuizDeck] = useState<Deck | null>(null);
+  const [customQuiz, setCustomQuiz] = useState<{ words: Word[]; title: string } | null>(null);
   const [customStudy, setCustomStudy] = useState<{ words: Word[]; title: string } | null>(null);
 
   const refreshData = () => {
@@ -136,6 +150,16 @@ export const App: React.FC = () => {
     return allWords.filter((w) => starredIds.has(w.id));
   }, [progress, allWords]);
 
+  // Danh sách từ đã từng học (learning hoặc mastered)
+  const learnedWords = useMemo(() => {
+    const learnedIds = new Set(
+      Object.values(progress)
+        .filter((p) => p.status !== 'new' && p.lastReviewed)
+        .map((p) => p.wordId)
+    );
+    return allWords.filter((w) => learnedIds.has(w.id));
+  }, [progress, allWords]);
+
   // Danh sách từ đến hạn ôn tập hôm nay (SRS)
   const dueWords = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -147,10 +171,31 @@ export const App: React.FC = () => {
     return allWords.filter((w) => dueIds.has(w.id));
   }, [progress, allWords]);
 
-  // Bắt đầu học một Deck
+  // Danh sách từ chưa thuộc (status === 'learning')
+  const unmasteredWords = useMemo(() => {
+    return allWords.filter((w) => {
+      const p = progress[w.id];
+      return p && p.status === 'learning';
+    });
+  }, [progress, allWords]);
+
+  // Bắt đầu học một Deck: Nếu bài có > 15 từ thì mở modal chọn số từ muốn học
   const handleSelectDeck = (deck: Deck) => {
-    setActiveDeck(deck);
-    setCustomStudy(null);
+    if (deck.wordCount > 15) {
+      setPendingDeck(deck);
+    } else {
+      setActiveDeck(deck);
+      setCustomStudy(null);
+    }
+  };
+
+  // Xử lý sau khi người dùng chọn số từ & chế độ học từ modal
+  const handleConfirmWordCount = (selectedWords: Word[], sessionTitle: string) => {
+    setCustomStudy({
+      words: selectedWords,
+      title: sessionTitle
+    });
+    setPendingDeck(null);
   };
 
   // Bắt đầu làm Quiz cho một Deck
@@ -158,7 +203,7 @@ export const App: React.FC = () => {
     setActiveQuizDeck(deck);
   };
 
-  // Học danh sách từ đã đánh dấu
+  // Học danh sách từ đã đánh dấu (Flashcard)
   const handleStudyStarred = () => {
     if (starredWords.length === 0) return;
     setCustomStudy({
@@ -167,10 +212,31 @@ export const App: React.FC = () => {
     });
   };
 
-  // Học danh sách từ đến hạn ôn tập
+  // Xem Flashcard toàn bộ các từ đã học
+  const handleStudyLearned = () => {
+    if (learnedWords.length === 0) return;
+    setCustomStudy({
+      words: learnedWords,
+      title: `📚 Toàn Bộ Từ Đã Học (${learnedWords.length} từ)`
+    });
+  };
+
+  // Làm bài Quiz trắc nghiệm các từ Chưa thuộc (Spam Quiz để ghi nhớ phản xạ)
+  const handleStudyUnmastered = () => {
+    if (unmasteredWords.length === 0) {
+      alert('Tuyệt vời! Hiện tại bạn không có từ nào trong danh sách Chưa thuộc.');
+      return;
+    }
+    setCustomQuiz({
+      words: unmasteredWords,
+      title: `⚡ Quiz: Từ Chưa Thuộc (${unmasteredWords.length} từ)`
+    });
+  };
+
+  // ÔN TẬP HÔM NAY: MỞ THẲNG BÀI QUIZ TRẮC NGHIỆM ĐỂ TEST TRÍ NHỚ
   const handleStudyDue = () => {
     if (dueWords.length === 0) return;
-    setCustomStudy({
+    setCustomQuiz({
       words: dueWords,
       title: `⏰ Ôn Tập Hôm Nay (${dueWords.length} từ)`
     });
@@ -181,7 +247,7 @@ export const App: React.FC = () => {
     setCustomStudy({ words, title });
   };
 
-  // Nếu đang mở Flashcard theo Deck
+  // Nếu đang mở Flashcard theo Deck (<= 15 từ)
   if (activeDeck) {
     const deckWords = allWords.filter((w) => activeDeck.wordIds.includes(w.id));
     return (
@@ -205,7 +271,7 @@ export const App: React.FC = () => {
     );
   }
 
-  // Nếu đang mở Flashcard danh sách tùy biến (Starred, Due, Search)
+  // Nếu đang mở Flashcard danh sách tùy biến (Đã chọn số lượng từ thông minh, Starred, Learned, Search)
   if (customStudy) {
     return (
       <FlashcardView
@@ -221,7 +287,24 @@ export const App: React.FC = () => {
     );
   }
 
-  // Nếu đang mở Quiz
+  // Nếu đang mở Quiz theo danh sách ôn tập (Custom Quiz: Ôn tập hôm nay)
+  if (customQuiz) {
+    return (
+      <QuizView
+        deckTitle={customQuiz.title}
+        words={customQuiz.words}
+        allWords={allWords}
+        enabledQuizTypes={stats.enabledQuizTypes}
+        onBack={() => {
+          setCustomQuiz(null);
+          refreshData();
+          if (userEmail) handleTriggerSync();
+        }}
+      />
+    );
+  }
+
+  // Nếu đang mở Quiz theo Deck thông thường
   if (activeQuizDeck) {
     const quizWords = allWords.filter((w) => activeQuizDeck.wordIds.includes(w.id));
     return (
@@ -229,6 +312,7 @@ export const App: React.FC = () => {
         deckTitle={activeQuizDeck.title}
         words={quizWords}
         allWords={allWords}
+        enabledQuizTypes={stats.enabledQuizTypes}
         onBack={() => {
           setActiveQuizDeck(null);
           refreshData();
@@ -262,10 +346,13 @@ export const App: React.FC = () => {
             onStartQuiz={handleStartQuiz}
             onStudyStarred={handleStudyStarred}
             onStudyDue={handleStudyDue}
+            onStudyLearned={handleStudyLearned}
+            onStudyUnmastered={handleStudyUnmastered}
             onOpenImport={() => setIsImportOpen(true)}
             onDeleteCustomDeck={handleDeleteCustomDeck}
             starredCount={starredWords.length}
             dueCount={dueWords.length}
+            learnedCount={learnedWords.length}
           />
         )}
 
@@ -347,6 +434,16 @@ export const App: React.FC = () => {
         onSuccess={() => {
           handleTriggerSync();
         }}
+      />
+
+      {/* Modal Chọn số từ muốn học nếu bài học có > 15 từ */}
+      <SelectWordCountModal
+        isOpen={!!pendingDeck}
+        deck={pendingDeck}
+        words={allWords}
+        progress={progress}
+        onClose={() => setPendingDeck(null)}
+        onConfirm={handleConfirmWordCount}
       />
     </div>
   );

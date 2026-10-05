@@ -39,6 +39,8 @@ export interface DeckProgress {
   percent: number;
 }
 
+export type QuizQuestionType = 'en_to_vi' | 'vi_to_en' | 'listening';
+
 export interface UserStats {
   streak: number;
   lastStudyDate: string; // YYYY-MM-DD
@@ -46,4 +48,5 @@ export interface UserStats {
   autoAudio: boolean;
   audioSpeed: number; // 0.8 or 1.0
   accent: 'en-US' | 'en-GB';
+  enabledQuizTypes: QuizQuestionType[];
 }

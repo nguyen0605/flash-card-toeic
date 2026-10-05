@@ -10,7 +10,8 @@ const DEFAULT_STATS: UserStats = {
   totalReviews: 0,
   autoAudio: true,
   audioSpeed: 0.9,
-  accent: 'en-US'
+  accent: 'en-US',
+  enabledQuizTypes: ['en_to_vi', 'vi_to_en', 'listening']
 };
 
 class StorageService {
@@ -21,7 +22,11 @@ class StorageService {
     if (this.statsCache) return this.statsCache;
     try {
       const data = localStorage.getItem(STORAGE_KEY_STATS);
-      this.statsCache = data ? { ...DEFAULT_STATS, ...JSON.parse(data) } : { ...DEFAULT_STATS };
+      const parsed: UserStats = data ? { ...DEFAULT_STATS, ...JSON.parse(data) } : { ...DEFAULT_STATS };
+      if (!parsed.enabledQuizTypes || !Array.isArray(parsed.enabledQuizTypes) || parsed.enabledQuizTypes.length === 0) {
+        parsed.enabledQuizTypes = ['en_to_vi', 'vi_to_en', 'listening'];
+      }
+      this.statsCache = parsed;
     } catch {
       this.statsCache = { ...DEFAULT_STATS };
     }

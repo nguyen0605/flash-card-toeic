@@ -1,10 +1,11 @@
-﻿import React, { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   Flame, Trophy, RotateCcw, Download, Upload,
   Smartphone, Settings, ShieldCheck,
-  Cloud, LogIn, LogOut, RefreshCw, UserCheck
+  Cloud, LogIn, LogOut, RefreshCw, UserCheck,
+  CheckSquare, Check, Languages, ArrowLeftRight, Headphones
 } from 'lucide-react';
-import { UserStats, Word, WordProgress } from '../types';
+import { UserStats, Word, WordProgress, QuizQuestionType } from '../types';
 import { db } from '../services/db';
 import { supabase } from '../services/supabase';
 
@@ -43,6 +44,27 @@ export const StatsView: React.FC<StatsViewProps> = ({
   const handleToggleAutoAudio = () => {
     db.saveStats({ autoAudio: !stats.autoAudio });
     onStatsUpdated();
+  };
+
+  const handleToggleQuizType = (type: QuizQuestionType) => {
+    const current: QuizQuestionType[] = stats.enabledQuizTypes && stats.enabledQuizTypes.length > 0
+      ? [...stats.enabledQuizTypes]
+      : ['en_to_vi', 'vi_to_en', 'listening'];
+
+    const exists = current.includes(type);
+    if (exists) {
+      if (current.length <= 1) {
+        alert('Bạn cần giữ lại ít nhất 1 dạng bài tập để làm Quiz!');
+        return;
+      }
+      const updated: QuizQuestionType[] = current.filter((t) => t !== type);
+      db.saveStats({ enabledQuizTypes: updated });
+      onStatsUpdated();
+    } else {
+      const updated: QuizQuestionType[] = [...current, type];
+      db.saveStats({ enabledQuizTypes: updated });
+      onStatsUpdated();
+    }
   };
 
   const handleChangeSpeed = (speed: number) => {
@@ -205,7 +227,7 @@ export const StatsView: React.FC<StatsViewProps> = ({
             <div 
               className="bg-amber-400 h-full transition-all duration-500"
               style={{ width: `${(learning / words.length) * 100}%` }}
-              title={`Đang học: ${learning}`}
+              title={`Chưa thuộc: ${learning}`}
             />
           </div>
 
@@ -215,7 +237,7 @@ export const StatsView: React.FC<StatsViewProps> = ({
               <div className="text-sm font-black text-emerald-800">{mastered}</div>
             </div>
             <div className="bg-amber-50 rounded-xl p-2 border border-amber-100">
-              <div className="text-[11px] font-semibold text-amber-700">Đang học</div>
+              <div className="text-[11px] font-semibold text-amber-700">Chưa thuộc</div>
               <div className="text-sm font-black text-amber-800">{learning}</div>
             </div>
             <div className="bg-slate-50 rounded-xl p-2 border border-slate-200">
@@ -301,6 +323,123 @@ export const StatsView: React.FC<StatsViewProps> = ({
             >
               UK (Anh)
             </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Cấu hình dạng bài tập khi làm Quiz */}
+      <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-sm space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="font-extrabold text-slate-800 text-base flex items-center gap-2">
+            <CheckSquare className="w-5 h-5 text-brand-600" /> Dạng bài tập khi làm Quiz
+          </h2>
+          <span className="text-[11px] font-bold text-brand-700 bg-brand-50 border border-brand-200 px-2.5 py-0.5 rounded-full">
+            {(stats.enabledQuizTypes || ['en_to_vi', 'vi_to_en', 'listening']).length}/3 dạng
+          </span>
+        </div>
+
+        <p className="text-xs text-slate-500 leading-relaxed">
+          Hệ thống sẽ <strong>tự động gộp & trộn đều</strong> các dạng bài tập bạn đã chọn bên dưới trong mỗi lượt làm Quiz trắc nghiệm:
+        </p>
+
+        <div className="space-y-2.5 pt-1">
+          {/* 1. Từ -> Nghĩa */}
+          <div
+            onClick={() => handleToggleQuizType('en_to_vi')}
+            className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
+              (stats.enabledQuizTypes || ['en_to_vi', 'vi_to_en', 'listening']).includes('en_to_vi')
+                ? 'bg-brand-50/50 border-brand-300 shadow-2xs'
+                : 'bg-slate-50/70 border-slate-200 opacity-60'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                (stats.enabledQuizTypes || ['en_to_vi', 'vi_to_en', 'listening']).includes('en_to_vi') 
+                  ? 'bg-brand-600 text-white' 
+                  : 'bg-slate-200 text-slate-500'
+              }`}>
+                <Languages className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-sm font-bold text-slate-800">Từ vựng → Nghĩa tiếng Việt</div>
+                <div className="text-xs text-slate-500 font-medium">Hiện từ tiếng Anh, chọn nghĩa tiếng Việt đúng</div>
+              </div>
+            </div>
+            <div className={`w-6 h-6 rounded-lg flex items-center justify-center border transition-all ${
+              (stats.enabledQuizTypes || ['en_to_vi', 'vi_to_en', 'listening']).includes('en_to_vi')
+                ? 'bg-brand-600 border-brand-600 text-white'
+                : 'border-slate-300 bg-white'
+            }`}>
+              {(stats.enabledQuizTypes || ['en_to_vi', 'vi_to_en', 'listening']).includes('en_to_vi') && (
+                <Check className="w-4 h-4" />
+              )}
+            </div>
+          </div>
+
+          {/* 2. Nghĩa -> Từ */}
+          <div
+            onClick={() => handleToggleQuizType('vi_to_en')}
+            className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
+              (stats.enabledQuizTypes || ['en_to_vi', 'vi_to_en', 'listening']).includes('vi_to_en')
+                ? 'bg-brand-50/50 border-brand-300 shadow-2xs'
+                : 'bg-slate-50/70 border-slate-200 opacity-60'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                (stats.enabledQuizTypes || ['en_to_vi', 'vi_to_en', 'listening']).includes('vi_to_en') 
+                  ? 'bg-brand-600 text-white' 
+                  : 'bg-slate-200 text-slate-500'
+              }`}>
+                <ArrowLeftRight className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-sm font-bold text-slate-800">Nghĩa tiếng Việt → Từ vựng</div>
+                <div className="text-xs text-slate-500 font-medium">Hiện nghĩa tiếng Việt, phản xạ chọn từ tiếng Anh</div>
+              </div>
+            </div>
+            <div className={`w-6 h-6 rounded-lg flex items-center justify-center border transition-all ${
+              (stats.enabledQuizTypes || ['en_to_vi', 'vi_to_en', 'listening']).includes('vi_to_en')
+                ? 'bg-brand-600 border-brand-600 text-white'
+                : 'border-slate-300 bg-white'
+            }`}>
+              {(stats.enabledQuizTypes || ['en_to_vi', 'vi_to_en', 'listening']).includes('vi_to_en') && (
+                <Check className="w-4 h-4" />
+              )}
+            </div>
+          </div>
+
+          {/* 3. Nghe chọn từ */}
+          <div
+            onClick={() => handleToggleQuizType('listening')}
+            className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
+              (stats.enabledQuizTypes || ['en_to_vi', 'vi_to_en', 'listening']).includes('listening')
+                ? 'bg-brand-50/50 border-brand-300 shadow-2xs'
+                : 'bg-slate-50/70 border-slate-200 opacity-60'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                (stats.enabledQuizTypes || ['en_to_vi', 'vi_to_en', 'listening']).includes('listening') 
+                  ? 'bg-brand-600 text-white' 
+                  : 'bg-slate-200 text-slate-500'
+              }`}>
+                <Headphones className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-sm font-bold text-slate-800">Nghe phát âm → Chọn từ vựng</div>
+                <div className="text-xs text-slate-500 font-medium">Nghe phát âm bản xứ (US/UK) và chọn từ đúng</div>
+              </div>
+            </div>
+            <div className={`w-6 h-6 rounded-lg flex items-center justify-center border transition-all ${
+              (stats.enabledQuizTypes || ['en_to_vi', 'vi_to_en', 'listening']).includes('listening')
+                ? 'bg-brand-600 border-brand-600 text-white'
+                : 'border-slate-300 bg-white'
+            }`}>
+              {(stats.enabledQuizTypes || ['en_to_vi', 'vi_to_en', 'listening']).includes('listening') && (
+                <Check className="w-4 h-4" />
+              )}
+            </div>
           </div>
         </div>
       </div>

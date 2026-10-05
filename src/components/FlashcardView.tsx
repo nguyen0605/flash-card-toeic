@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Star, Volume2, RotateCcw, Check, Sparkles, Trophy, HelpCircle, ChevronLeft } from 'lucide-react';
-import confetti from 'canvas-confetti';
-import { Word, WordProgress } from '../types';
-import { SRSGrade } from '../services/srs';
+﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { 
+  ArrowLeft, Volume2, Star, RotateCcw, Check, 
+  ChevronLeft, Trophy, Sparkles 
+} from 'lucide-react';
+import { Word } from '../types';
 import { db } from '../services/db';
+import { SRSGrade } from '../services/srs';
 import { tts } from '../services/tts';
 
 interface FlashcardViewProps {
@@ -19,43 +21,33 @@ export const FlashcardView: React.FC<FlashcardViewProps> = ({
   words,
   onBack,
   onFinishQuiz,
-  autoAudio = true
+  autoAudio = true,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [swipeOffset, setSwipeOffset] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [sessionResults, setSessionResults] = useState<{ wordId: number; grade: SRSGrade }[]>([]);
-  
-  // Touch swipe support
+
   const touchStartX = useRef<number | null>(null);
   const touchDeltaX = useRef<number>(0);
-  const [swipeOffset, setSwipeOffset] = useState(0);
 
   const currentWord = words[currentIndex];
   const currentProgress = currentWord ? db.getWordProgress(currentWord.id) : undefined;
-  const isStarred = currentProgress?.starred ?? false;
+  const isStarred = currentProgress?.starred || false;
 
-  // Phát âm khi sang từ mới nếu bật autoAudio
+  // Tự động phát âm khi chuyển sang từ mới nếu bật chế độ autoAudio
   useEffect(() => {
-    if (currentWord && !isFinished) {
-      setIsFlipped(false);
-      setSwipeOffset(0);
-      if (autoAudio) {
+    setIsFlipped(false);
+    setSwipeOffset(0);
+
+    if (currentWord && autoAudio && !isFinished) {
+      const timer = setTimeout(() => {
         tts.speak(currentWord.word);
-      }
+      }, 200);
+      return () => clearTimeout(timer);
     }
   }, [currentIndex, isFinished]);
-
-  // Kích hoạt pháo hoa khi hoàn thành bài
-  useEffect(() => {
-    if (isFinished) {
-      confetti({
-        particleCount: 80,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
-    }
-  }, [isFinished]);
 
   const handleSpeak = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -68,12 +60,11 @@ export const FlashcardView: React.FC<FlashcardViewProps> = ({
     e.stopPropagation();
     if (currentWord) {
       db.toggleStar(currentWord.id);
-      // Buộc component render lại cập nhật star
       setCurrentIndex((prev) => prev);
     }
   };
 
-  const handleGrade = (grade: SRSGrade) => {
+  const handleGrade = useCallback((grade: SRSGrade) => {
     if (!currentWord) return;
 
     db.recordReview(currentWord.id, grade);
@@ -84,10 +75,10 @@ export const FlashcardView: React.FC<FlashcardViewProps> = ({
     } else {
       setIsFinished(true);
     }
-  };
+  }, [currentWord, currentIndex, words.length]);
 
   // Quay về từ vựng trước
-  const handlePrevWord = (e?: React.MouseEvent) => {
+  const handlePrevWord = useCallback((e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     if (currentIndex > 0) {
       setCurrentIndex((prev) => prev - 1);
@@ -95,9 +86,38 @@ export const FlashcardView: React.FC<FlashcardViewProps> = ({
       setSwipeOffset(0);
       setSessionResults((prev) => prev.slice(0, -1));
     }
-  };
+  }, [currentIndex]);
 
-  // Xử lý cử chỉ vuốt ngón tay trên màn hình điện thoại
+  // Phím tắt bàn phím (Space để lật, 1-4 để chọn mức độ nhớ, Mũi tên trái để quay lại)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isFinished) return;
+
+      if (e.code === 'Space') {
+        e.preventDefault();
+        setIsFlipped((prev) => !prev);
+      } else if (e.key === '1' && isFlipped) {
+        handleGrade(1);
+      } else if (e.key === '2' && isFlipped) {
+        handleGrade(2);
+      } else if (e.key === '3' && isFlipped) {
+        handleGrade(3);
+      } else if (e.key === '4' && isFlipped) {
+        handleGrade(4);
+      } else if (e.key === 'ArrowLeft') {
+        handlePrevWord();
+      } else if (e.key === 's' || e.key === 'S') {
+        handleSpeak();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isFlipped, isFinished, handleGrade, handlePrevWord]);
+
+  // Xử lý cử chỉ vuốt ngón tay:
+  // - Vuốt SANG TRÁI (< -80px): ĐÃ GHI NHỚ (Good)
+  // - Vuốt SANG PHẢI (> 80px): CHƯA GHI NHỚ (Again)
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
   };
@@ -116,12 +136,12 @@ export const FlashcardView: React.FC<FlashcardViewProps> = ({
     touchStartX.current = null;
     touchDeltaX.current = 0;
 
-    // Nếu vuốt sang phải > 80px: Đã nhớ tốt (Good)
-    if (delta > 80) {
+    // Vuốt sang trái: Đã nhớ tốt (Good)
+    if (delta < -80) {
       handleGrade(3);
     } 
-    // Nếu vuốt sang trái < -80px: Chưa nhớ (Again)
-    else if (delta < -80) {
+    // Vuốt sang phải: Chưa nhớ (Again)
+    else if (delta > 80) {
       handleGrade(1);
     } else {
       setSwipeOffset(0);
@@ -144,44 +164,44 @@ export const FlashcardView: React.FC<FlashcardViewProps> = ({
 
   // Màn hình hoàn thành bài học
   if (isFinished) {
-    const againCount = sessionResults.filter((r) => r.grade === 1).length;
-    const goodCount = sessionResults.filter((r) => r.grade >= 3).length;
+    const rememberedCount = sessionResults.filter(r => r.grade >= 3).length;
+    const reviewAgainCount = sessionResults.filter(r => r.grade < 3).length;
 
     return (
-      <div 
-        className="h-[100dvh] overflow-y-auto bg-slate-50 flex flex-col justify-between p-6 max-w-md mx-auto text-center"
-        style={{ 
-          paddingTop: 'calc(env(safe-area-inset-top, 0px) + 20px)',
-          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)'
-        }}
-      >
-        <div className="pt-4">
-          <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl mx-auto flex items-center justify-center mb-4 shadow-lg shadow-emerald-500/20">
-            <Trophy className="w-10 h-10" />
-          </div>
-          <h2 className="text-2xl font-black text-slate-800 mb-1">Xuất Sắc!</h2>
-          <p className="text-sm text-slate-500">Bạn đã hoàn thành phiên học {title}</p>
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center animate-fade-in max-w-md mx-auto">
+        <div className="w-20 h-20 bg-amber-100 rounded-3xl flex items-center justify-center text-amber-500 mb-4 shadow-lg shadow-amber-500/20">
+          <Trophy className="w-10 h-10 animate-bounce" />
+        </div>
 
-          <div className="grid grid-cols-2 gap-3 mt-8">
-            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-              <div className="text-2xl font-black text-emerald-600">{goodCount}</div>
-              <div className="text-xs text-slate-500 font-medium mt-0.5">Từ ghi nhớ tốt</div>
-            </div>
-            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-              <div className="text-2xl font-black text-rose-500">{againCount}</div>
-              <div className="text-xs text-slate-500 font-medium mt-0.5">Cần củng cố thêm</div>
-            </div>
+        <h2 className="text-2xl font-black text-slate-800 mb-1">Xuất Sắc! Hoàn Thành!</h2>
+        <p className="text-xs text-slate-500 mb-6">Bạn vừa hoàn thành một phiên ghi nhớ từ vựng thông minh.</p>
+
+        {/* Bảng kết quả nhanh */}
+        <div className="w-full bg-white rounded-3xl p-5 shadow-sm border border-slate-200/90 mb-6 space-y-3">
+          <div className="flex justify-between items-center text-sm py-1 border-b border-slate-100">
+            <span className="text-slate-600 flex items-center gap-2">
+              <Check className="w-4 h-4 text-emerald-500" /> Đã nhớ tốt:
+            </span>
+            <span className="font-black text-emerald-600 text-base">{rememberedCount} từ</span>
+          </div>
+
+          <div className="flex justify-between items-center text-sm py-1">
+            <span className="text-slate-600 flex items-center gap-2">
+              <RotateCcw className="w-4 h-4 text-rose-500" /> Cần ôn lại:
+            </span>
+            <span className="font-black text-rose-600 text-base">{reviewAgainCount} từ</span>
           </div>
         </div>
 
-        <div className="space-y-3 pb-4">
+        {/* Nút hành động sau bài học */}
+        <div className="w-full space-y-2.5">
           {onFinishQuiz && (
             <button
               onClick={onFinishQuiz}
-              className="w-full py-3.5 px-4 bg-brand-600 text-white rounded-2xl font-bold shadow-lg shadow-brand-500/25 active:scale-98 transition-all flex items-center justify-center gap-2"
+              className="w-full py-3.5 px-4 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white rounded-2xl font-bold shadow-md shadow-brand-500/25 active:scale-98 transition-all flex items-center justify-center gap-2"
             >
-              <Sparkles className="w-5 h-5 text-amber-300" />
-              Làm bài kiểm tra Quiz ngay
+              <Sparkles className="w-5 h-5" />
+              Làm Quiz kiểm tra ngay
             </button>
           )}
 
@@ -212,7 +232,7 @@ export const FlashcardView: React.FC<FlashcardViewProps> = ({
 
   return (
     <div className="h-[100dvh] bg-slate-100 flex flex-col justify-between max-w-md mx-auto select-none overflow-hidden">
-      {/* Top Header với Safe Area cho iPhone (tránh tai thỏ, giờ và pin) */}
+      {/* Top Header với Safe Area cho iPhone */}
       <div 
         className="bg-white px-4 pb-2 border-b border-slate-200/80 sticky top-0 z-20 shrink-0"
         style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}
@@ -276,15 +296,17 @@ export const FlashcardView: React.FC<FlashcardViewProps> = ({
 
       {/* Main Flashcard Body */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-3 min-h-0 relative">
-        {/* Swipe Feedback Overlay */}
-        {swipeOffset > 40 && (
-          <div className="absolute top-6 right-8 z-30 px-3 py-1 bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md rotate-12 flex items-center gap-1">
-            <Check className="w-4 h-4" /> ĐÃ NHỚ
+        {/* Swipe Feedback Overlay:
+            - Kéo sang trái (swipeOffset < -40): ĐÃ NHỚ (Xanh lá)
+            - Kéo sang phải (swipeOffset > 40): CHƯA NHỚ (Đỏ) */}
+        {swipeOffset < -40 && (
+          <div className="absolute top-6 left-8 z-30 px-3.5 py-1.5 bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-lg -rotate-12 flex items-center gap-1.5">
+            <Check className="w-4 h-4" /> ĐÃ GHI NHỚ
           </div>
         )}
-        {swipeOffset < -40 && (
-          <div className="absolute top-6 left-8 z-30 px-3 py-1 bg-rose-500 text-white font-bold text-xs rounded-xl shadow-md -rotate-12 flex items-center gap-1">
-            <RotateCcw className="w-4 h-4" /> CHƯA NHỚ
+        {swipeOffset > 40 && (
+          <div className="absolute top-6 right-8 z-30 px-3.5 py-1.5 bg-rose-500 text-white font-bold text-xs rounded-xl shadow-lg rotate-12 flex items-center gap-1.5">
+            <RotateCcw className="w-4 h-4" /> CHƯA GHI NHỚ
           </div>
         )}
 
@@ -322,60 +344,76 @@ export const FlashcardView: React.FC<FlashcardViewProps> = ({
                 {currentWord.word}
               </h1>
               {currentWord.phonetic && (
-                <p className="text-slate-500 text-base font-medium tracking-wide">
-                  {currentWord.phonetic}
+                <p className="text-base text-brand-600 font-medium tracking-wide">
+                  /{currentWord.phonetic}/
                 </p>
               )}
+              <div className="mt-8 text-xs font-semibold text-slate-400 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
+                Chạm (hoặc bấm Space) để lật xem nghĩa 🔄
+              </div>
             </div>
           ) : (
-            /* Mặt sau: Nghĩa & chi tiết */
-            <div className="flex-1 flex flex-col items-center justify-center text-center my-4 animate-flip-in">
-              <h2 className="text-2xl font-extrabold text-slate-800 mb-1">
-                {currentWord.word}
-              </h2>
-              {currentWord.phonetic && (
-                <p className="text-slate-400 text-xs mb-4">{currentWord.phonetic}</p>
-              )}
-              
-              <div className="bg-brand-50/80 border border-brand-100 rounded-2xl p-4 w-full">
-                <p className="text-xl sm:text-2xl font-black text-brand-800 leading-snug">
-                  {currentWord.meaning}
-                </p>
+            /* Mặt sau */
+            <div className="flex-1 flex flex-col justify-center my-2 text-center overflow-y-auto animate-fade-in no-scrollbar">
+              <div className="text-xs font-bold uppercase text-brand-600 tracking-wider mb-1">
+                Ý Nghĩa
               </div>
+              <p className="text-xl sm:text-2xl font-extrabold text-slate-800 leading-snug mb-4">
+                {currentWord.meaning}
+              </p>
+
+              {currentWord.example && (
+                <div className="bg-slate-50 rounded-2xl p-3 text-left border border-slate-100 mt-2 space-y-1">
+                  <div className="text-[11px] font-bold text-slate-400 uppercase">Ví dụ:</div>
+                  <p className="text-xs text-slate-700 italic leading-relaxed">
+                    "{currentWord.example}"
+                  </p>
+                  {currentWord.example_vi && (
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      {currentWord.example_vi}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
-          {/* Card Bottom: Gợi ý lật thẻ */}
-          <div className="text-center pt-2">
-            <span className="text-xs text-slate-400 font-medium inline-flex items-center gap-1.5">
-              <HelpCircle className="w-3.5 h-3.5" />
-              {isFlipped ? 'Chạm để xem lại mặt trước' : 'Chạm vào thẻ để xem nghĩa'}
+          {/* Card Bottom: Gợi ý vuốt & phím tắt */}
+          <div className="text-center pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] font-semibold text-slate-400">
+            <span className="flex items-center gap-1 text-emerald-600">
+              ← Vuốt trái: Đã nhớ
+            </span>
+            <span className="hidden sm:inline text-slate-400">
+              Phím 1,2,3,4 để đánh giá
+            </span>
+            <span className="flex items-center gap-1 text-rose-500">
+              Vuốt phải: Chưa nhớ →
             </span>
           </div>
         </div>
       </div>
 
-      {/* Bottom Action Area: SRS Grading Buttons */}
+      {/* Bottom Bar: Nút đánh giá SRS */}
       <div 
-        className="bg-white/95 backdrop-blur-md border-t border-slate-200/80 px-4 pt-3 shrink-0"
-        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
+        className="bg-white border-t border-slate-200/80 px-4 pt-3 pb-3 sticky bottom-0 z-20 shrink-0"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}
       >
         {!isFlipped ? (
-          <div className="flex items-center gap-2">
+          <div className="flex gap-2">
             {currentIndex > 0 && (
               <button
                 onClick={handlePrevWord}
-                className="py-3.5 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-bold text-sm flex items-center gap-1 transition-all shrink-0 shadow-xs"
-                title="Quay lại từ trước"
+                className="py-3.5 px-4 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-bold text-xs rounded-2xl transition-all flex items-center justify-center gap-1 shrink-0"
+                title="Quay lại từ vựng trước"
               >
                 <ChevronLeft className="w-4 h-4" /> Từ trước
               </button>
             )}
             <button
               onClick={() => setIsFlipped(true)}
-              className="flex-1 py-3.5 bg-brand-600 hover:bg-brand-700 active:scale-98 text-white rounded-2xl font-bold text-base shadow-lg shadow-brand-500/25 transition-all text-center"
+              className="flex-1 py-3.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-bold text-sm rounded-2xl shadow-md shadow-brand-500/20 active:scale-98 transition-all flex items-center justify-center gap-2"
             >
-              Hiện Nghĩa
+              <span>Xem nghĩa & Đánh giá (Space)</span>
             </button>
           </div>
         ) : (
@@ -402,7 +440,7 @@ export const FlashcardView: React.FC<FlashcardViewProps> = ({
                 className="flex flex-col items-center justify-center py-2.5 px-1 rounded-xl bg-rose-50 hover:bg-rose-100 active:scale-95 border border-rose-200 text-rose-700 transition-all"
               >
                 <span className="text-xs font-black">Chưa nhớ</span>
-                <span className="text-[10px] text-rose-500 font-medium mt-0.5">1 ngày</span>
+                <span className="text-[10px] text-rose-500 font-medium mt-0.5">1 ngày (Phím 1)</span>
               </button>
 
               {/* 2: Khó */}
@@ -411,7 +449,7 @@ export const FlashcardView: React.FC<FlashcardViewProps> = ({
                 className="flex flex-col items-center justify-center py-2.5 px-1 rounded-xl bg-amber-50 hover:bg-amber-100 active:scale-95 border border-amber-200 text-amber-700 transition-all"
               >
                 <span className="text-xs font-black">Khó</span>
-                <span className="text-[10px] text-amber-600 font-medium mt-0.5">2 ngày</span>
+                <span className="text-[10px] text-amber-600 font-medium mt-0.5">2 ngày (Phím 2)</span>
               </button>
 
               {/* 3: Tốt */}
@@ -420,7 +458,7 @@ export const FlashcardView: React.FC<FlashcardViewProps> = ({
                 className="flex flex-col items-center justify-center py-2.5 px-1 rounded-xl bg-emerald-50 hover:bg-emerald-100 active:scale-95 border border-emerald-200 text-emerald-700 transition-all"
               >
                 <span className="text-xs font-black">Nhớ tốt</span>
-                <span className="text-[10px] text-emerald-600 font-medium mt-0.5">4 ngày</span>
+                <span className="text-[10px] text-emerald-600 font-medium mt-0.5">4 ngày (Phím 3)</span>
               </button>
 
               {/* 4: Dễ */}
@@ -429,7 +467,7 @@ export const FlashcardView: React.FC<FlashcardViewProps> = ({
                 className="flex flex-col items-center justify-center py-2.5 px-1 rounded-xl bg-indigo-50 hover:bg-indigo-100 active:scale-95 border border-indigo-200 text-brand-700 transition-all"
               >
                 <span className="text-xs font-black">Rất dễ</span>
-                <span className="text-[10px] text-brand-500 font-medium mt-0.5">7 ngày</span>
+                <span className="text-[10px] text-brand-500 font-medium mt-0.5">7 ngày (Phím 4)</span>
               </button>
             </div>
           </div>
